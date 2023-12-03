@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Todo ExplainTheClass.
+ * DTO class for {@link com.mabaya.ads.model.Campaign}.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */

@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
- * Todo ExplainTheClass.
+ * DTO class for {@link com.mabaya.ads.model.Product}.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
