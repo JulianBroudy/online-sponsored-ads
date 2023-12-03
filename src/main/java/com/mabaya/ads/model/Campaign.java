@@ -1,13 +1,11 @@
 package com.mabaya.ads.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Todo Should we create an interface for the getters? Todo Should we remove the setters?
@@ -17,15 +15,23 @@ import java.util.List;
 @Entity
 @Table
 public class Campaign {
-  @Id private Long id;
+
+  @Id
+  @SequenceGenerator(
+      name = "campaign_sequence",
+      sequenceName = "campaign_sequence",
+      allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "campaign_sequence")
+  private Long id;
+
   private String name;
   private Timestamp startDate;
   private BigDecimal bid;
-  private List<Product> products;
+  @ManyToMany private Collection<Product> products;
 
   public Campaign() {}
 
-  public Campaign(String name, Timestamp startDate, BigDecimal bid, List<Product> products) {
+  public Campaign(String name, Timestamp startDate, BigDecimal bid, Collection<Product> products) {
     this.name = name;
     this.startDate = startDate;
     this.bid = bid;
@@ -33,12 +39,18 @@ public class Campaign {
   }
 
   public Campaign(
-      Long id, String name, Timestamp startDate, BigDecimal bid, List<Product> products) {
+      Long id, String name, Timestamp startDate, BigDecimal bid, Collection<Product> products) {
     this.id = id;
     this.name = name;
     this.startDate = startDate;
     this.bid = bid;
     this.products = products;
+  }
+
+  public Campaign(String name, Timestamp startDate, BigDecimal bid) {
+    this.name = name;
+    this.startDate = startDate;
+    this.bid = bid;
   }
 
   public Long getId() {
@@ -73,15 +85,15 @@ public class Campaign {
     this.bid = bid;
   }
 
-  public List<Product> getProducts() {
+  public Collection<Product> getProducts() {
     return products;
   }
 
-  public void setProducts(List<Product> products) {
+  public void setProducts(Collection<Product> products) {
     this.products = products;
   }
 
   public boolean isActive() {
-    return Duration.between(this.startDate.toInstant(), Instant.now()).toDays() < 10;
+    return Duration.between(startDate.toInstant(), Instant.now()).toDays() < 10;
   }
 }

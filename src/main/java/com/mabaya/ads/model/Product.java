@@ -1,13 +1,10 @@
 package com.mabaya.ads.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 /**
- * Todo Should we create an interface for the getters?
- * Todo Should we remove the setters?
+ * Todo Should we create an interface for the getters? Todo Should we remove the setters?
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
@@ -15,10 +12,21 @@ import java.math.BigDecimal;
 @Table
 public class Product {
 
-  @Id private Long id;
+  @Id
+  @SequenceGenerator(
+      name = "product_sequence",
+      sequenceName = "product_sequence",
+      allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_sequence")
+  private Long id;
+
   private String title;
   private BigDecimal price;
+
+  @Enumerated(EnumType.STRING)
   private Category category;
+
+  @Column(unique = true)
   private String serialNumber;
 
   public Product() {}
