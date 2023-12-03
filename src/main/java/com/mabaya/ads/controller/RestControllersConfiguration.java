@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Todo ExplainTheClass.
+ * This class is responsible for prefixing api paths to endpoints.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
