@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/yourdb
+      SPRING_DATASOURCE_USERNAME: yourusername
+      SPRING_DATASOURCE_PASSWORD: yourpassword
+      # other environment variables
+
+  db:
+    image: postgres:alpine3.17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: yourdb
+      POSTGRES_USER: yourusername
+      POSTGRES_PASSWORD: yourpassword
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
