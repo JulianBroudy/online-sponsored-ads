@@ -12,10 +12,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class RestControllersConfiguration implements WebMvcConfigurer {
-    @Override
-    public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.addPathPrefix("api/v1", HandlerTypePredicate.forAnnotation(V1RestController.class));
-    }
-
-
+  @Override
+  public void configurePathMatch(PathMatchConfigurer configurer) {
+    configurer.addPathPrefix("api/v1", HandlerTypePredicate.forAnnotation(V1RestController.class));
+  }
 }
