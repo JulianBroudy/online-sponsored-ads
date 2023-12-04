@@ -1,7 +1,7 @@
 package com.mabaya.ads.model;
 
 /**
- * Todo ExplainTheClass.
+ * Assuming the categories are pre-defined and not customer made.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */

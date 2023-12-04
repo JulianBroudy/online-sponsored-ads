@@ -13,9 +13,8 @@ import java.util.Collection;
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Entity
-@Table
+@Table(indexes = {@Index(name = "idx_campaign_start_date", columnList = "start_date")})
 public class Campaign {
-
   @Id
   @SequenceGenerator(
       name = "campaign_sequence",

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Entity
-@Table
+@Table(indexes = {@Index(name = "idx_product_category", columnList = "category")})
 public class Product {
 
   @Id
