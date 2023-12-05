@@ -23,7 +23,7 @@ public class AdService {
   private static final Logger LOGGER = LoggerFactory.getLogger(AdService.class);
 
   private final CampaignService campaignService;
-  private final IMappingService<Product, ProductDTO> productMappingService;
+  private final IMapper<Product, ProductDTO> productMappingService;
 
   @Autowired
   public AdService(
