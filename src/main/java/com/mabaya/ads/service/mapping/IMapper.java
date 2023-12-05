@@ -33,11 +33,7 @@ public interface IMapper<MODEL, DTO> {
    * @return A set of mapped DTOs.
    */
   default Collection<DTO> mapToDTO(Collection<MODEL> models) {
-    final Set<DTO> dtos = new HashSet<>();
-    for (MODEL model : models) {
-      dtos.add(mapToDTO(model));
-    }
-    return dtos;
+    return models.stream().map(this::mapToDTO).collect(Collectors.toSet());
   }
 
   /**
@@ -56,10 +52,6 @@ public interface IMapper<MODEL, DTO> {
    * @return A set of mapped model entities.
    */
   default Collection<MODEL> mapToModel(Collection<DTO> dtos) {
-    final Set<MODEL> models = new HashSet<>();
-    for (DTO dto : dtos) {
-      models.add(mapToModel(dto));
-    }
-    return models;
+    return dtos.stream().map(this::mapToModel).collect(Collectors.toSet());
   }
 }

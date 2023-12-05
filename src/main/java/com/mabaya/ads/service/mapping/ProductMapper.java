@@ -48,11 +48,8 @@ public class ProductMapper implements IMapper<Product, ProductDTO> {
   @Override
   public Product mapToModel(ProductDTO dto) {
     LOGGER.debug("Mapping DTO to Product model");
-    if (dto.id().isPresent()) {
-      return new Product(
-          dto.id().get(), dto.title(), dto.price(), dto.category(), dto.serialNumber());
-    } else {
-      return new Product(dto.title(), dto.price(), dto.category(), dto.serialNumber());
-    }
+    return dto.id()
+        .map(id -> new Product(id, dto.title(), dto.price(), dto.category(), dto.serialNumber()))
+        .orElseGet(() -> new Product(dto.title(), dto.price(), dto.category(), dto.serialNumber()));
   }
 }

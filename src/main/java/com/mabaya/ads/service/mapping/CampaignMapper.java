@@ -50,10 +50,8 @@ public class CampaignMapper implements IMapper<Campaign, CampaignDTO> {
   @Override
   public Campaign mapToModel(CampaignDTO dto) {
     LOGGER.debug("Mapping DTO to Campaign model");
-    if (dto.id().isPresent()) {
-      return new Campaign(dto.id().get(), dto.name(), dto.startDate(), dto.bid(), null);
-    } else {
-      return new Campaign(dto.name(), dto.startDate(), dto.bid());
-    }
+    return dto.id()
+        .map(id -> new Campaign(id, dto.name(), dto.startDate(), dto.bid(), null))
+        .orElseGet(() -> new Campaign(dto.name(), dto.startDate(), dto.bid()));
   }
 }
