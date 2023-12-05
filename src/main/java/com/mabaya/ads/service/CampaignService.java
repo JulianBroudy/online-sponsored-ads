@@ -20,22 +20,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service class for managing campaigns. This class provides methods to create, retrieve, and manage
- * campaigns based on {@link CampaignDTO} and {@link Category}.
+ * Manages the lifecycle and operations of campaigns. This service provides functionalities for
+ * creating, retrieving, and managing campaigns, leveraging {@link CampaignDTO} and {@link
+ * Category}.
  *
- * <p>It utilizes {@link CampaignRepository} for database operations and {@link IMapper} for mapping
- * between DTOs and entities. The {@link ProductService} is used for additional product-related
- * validations and operations.
+ * <p>It uses {@link CampaignRepository} for data persistence, {@link IMapper} for mapping between
+ * entity and DTO, and {@link ProductService} for additional validations. The {@link Transactional}
+ * annotation ensures proper transaction management for database operations.
  *
- * <p>Usage of {@link Transactional} ensures that database operations are handled within a
- * transaction context, providing consistency and rollback capabilities for complex operations.
- *
+ * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  * @see Campaign
  * @see CampaignDTO
  * @see Category
  * @see ProductService
  * @see IMapper
- * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Service
 public class CampaignService {
