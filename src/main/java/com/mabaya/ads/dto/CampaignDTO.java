@@ -1,10 +1,12 @@
 package com.mabaya.ads.dto;
 
-import com.mabaya.ads.model.Product;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * DTO class for {@link com.mabaya.ads.model.Campaign}.
@@ -12,10 +14,8 @@ import java.util.Objects;
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 public record CampaignDTO(
-    Long id, String name, Timestamp startDate, BigDecimal bid, Collection<Long> productIds) {
-  public CampaignDTO {
-    Objects.requireNonNull(name, "Name must not be null");
-    Objects.requireNonNull(startDate, "Start date must not be null");
-    Objects.requireNonNull(bid, "Bid must not be null");
-  }
-}
+    Optional<Long> id,
+    @NotBlank String name,
+    @NotNull Instant startDate,
+    @NotNull BigDecimal bid,
+    @NotEmpty Collection<Long> productIds) {}
