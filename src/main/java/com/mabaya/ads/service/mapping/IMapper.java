@@ -15,6 +15,7 @@ import java.util.Set;
  * @param <DTO> the type parameter representing the Data Transfer Object
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
+@SuppressWarnings("unused")
 public interface IMapper<MODEL, DTO> {
 
   /**
