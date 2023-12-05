@@ -10,10 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * This class defines the mapping operations between {@link Campaign} and {@link CampaignDTO}. //
- * TODO Should be annotated with `@Component` instead?
+ * Handles mapping between {@link Campaign} entity and {@link CampaignDTO}. Facilitates conversions
+ * in both directions while ensuring data integrity and structure.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
+ * @see Campaign
+ * @see CampaignDTO
  */
 @Component
 public class CampaignMapper implements IMapper<Campaign, CampaignDTO> {
@@ -21,11 +23,11 @@ public class CampaignMapper implements IMapper<Campaign, CampaignDTO> {
   private static final Logger LOGGER = LoggerFactory.getLogger(CampaignMapper.class);
 
   /**
-   * Converts a {@link Campaign} entity to a {@link CampaignDTO}. This involves mapping the
-   * campaign's properties to the corresponding DTO fields.
+   * Maps {@link Campaign} entity to {@link CampaignDTO}. Transfers entity properties to a DTO
+   * format, including associated product IDs.
    *
-   * @param model the Campaign entity to be mapped
-   * @return the corresponding CampaignDTO
+   * @param model the Campaign entity to be mapped.
+   * @return Corresponding CampaignDTO.
    */
   @Override
   public CampaignDTO mapToDTO(Campaign model) {
@@ -35,16 +37,15 @@ public class CampaignMapper implements IMapper<Campaign, CampaignDTO> {
         model.getName(),
         model.getStartDate(),
         model.getBid(),
-        model.getProducts().stream().map(Product::getId).collect(Collectors.toList()));
+        model.getProducts().stream().map(Product::getId).collect(Collectors.toSet()));
   }
 
   /**
-   * Converts a {@link CampaignDTO} to a {@link Campaign} entity. This involves mapping the DTO's
-   * properties to the corresponding campaign fields. Note: This method maps only the basic fields
-   * and does not include the collection of products nor the id.
+   * Maps {@link CampaignDTO} to {@link Campaign} entity. Handles creation and updates by mapping
+   * DTO fields to the Campaign entity.
    *
-   * @param dto the CampaignDTO to be mapped
-   * @return the corresponding Campaign entity
+   * @param dto the CampaignDTO to be mapped.
+   * @return Corresponding Campaign entity.
    */
   @Override
   public Campaign mapToModel(CampaignDTO dto) {
