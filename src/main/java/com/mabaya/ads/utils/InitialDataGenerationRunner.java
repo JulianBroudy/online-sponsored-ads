@@ -26,7 +26,7 @@ public class InitialDataGenerationRunner implements ApplicationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialDataGenerationRunner.class);
 
-  private static final int BATCH_SIZE = 50; // Adjust based on your performance needs
+  private static final int BATCH_SIZE = 50;
   private static final Map<Category, List<String>> CATEGORY_PRODUCT_NAMES;
 
   static {
@@ -256,7 +256,9 @@ public class InitialDataGenerationRunner implements ApplicationRunner {
     LOGGER.debug("Initializing campaigns");
     List<Campaign> batch = new ArrayList<>();
     for (int i = 1; i <= 100; i++) {
-      batch.add(generateCampaign(i, allProducts));
+      LOGGER.trace("Generating campaign number {}", i);
+      batch.add(
+          generateCampaign(i, allProducts, (i <= 10))); // Ensure first 10% have a recent start date
       if (batch.size() == BATCH_SIZE) {
         persistCampaignsBatch(batch);
       }
@@ -265,10 +267,10 @@ public class InitialDataGenerationRunner implements ApplicationRunner {
     LOGGER.debug("Finished initializing campaigns");
   }
 
-  private Campaign generateCampaign(int index, List<Product> allProducts) {
+  private Campaign generateCampaign(int index, List<Product> allProducts, boolean recentDate) {
     LOGGER.trace("Generating campaign {}", index);
     String name = "Campaign " + index;
-    Instant startDate = generateRandomStartDate();
+    Instant startDate = generateStartDate(recentDate);
     BigDecimal bid =
         BigDecimal.valueOf(new Random().nextDouble() * 100 + 100).setScale(2, RoundingMode.HALF_UP);
 
@@ -276,18 +278,17 @@ public class InitialDataGenerationRunner implements ApplicationRunner {
     return new Campaign(name, startDate, bid, new HashSet<>(selectedProducts));
   }
 
-  private Instant generateRandomStartDate() {
+  private Instant generateStartDate(boolean recentDate) {
     LOGGER.trace("Generating random start date for campaign");
     Random random = new Random();
-    long millisInYear = 365L * 24 * 60 * 60 * 1000;
+    long millisInYear = (recentDate ? 7L : 365L) * 24 * 60 * 60 * 1000;
     long randomMillis =
         (long) (random.nextDouble() * millisInYear * 2) - millisInYear; // Range: [-1 year, +1 year]
     return Instant.now().plusMillis(randomMillis);
   }
 
   private List<Product> selectRandomProducts(List<Product> allProducts, Random random) {
-    int numberOfProductsToAdd =
-        random.nextInt(10) + 1; // For example, each campaign will have 1 to 10 products
+    int numberOfProductsToAdd = random.nextInt(10) + 1;
     Collections.shuffle(allProducts);
     LOGGER.trace("Selecting {} products for a campaign", numberOfProductsToAdd);
     return allProducts.subList(0, Math.min(numberOfProductsToAdd, allProducts.size()));
