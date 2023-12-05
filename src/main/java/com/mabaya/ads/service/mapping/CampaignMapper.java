@@ -3,8 +3,11 @@ package com.mabaya.ads.service.mapping;
 import com.mabaya.ads.dto.CampaignDTO;
 import com.mabaya.ads.model.Campaign;
 import com.mabaya.ads.model.Product;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * This class defines the mapping operations between {@link Campaign} and {@link CampaignDTO}. //
@@ -12,8 +15,10 @@ import org.springframework.stereotype.Service;
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
-@Service
-public class CampaignMappingService implements IMappingService<Campaign, CampaignDTO> {
+@Component
+public class CampaignMapper implements IMapper<Campaign, CampaignDTO> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CampaignMapper.class);
 
   /**
    * Converts a {@link Campaign} entity to a {@link CampaignDTO}. This involves mapping the
@@ -24,8 +29,9 @@ public class CampaignMappingService implements IMappingService<Campaign, Campaig
    */
   @Override
   public CampaignDTO mapToDTO(Campaign model) {
+    LOGGER.debug("Mapping Campaign model to DTO");
     return new CampaignDTO(
-        model.getId(),
+        Optional.of(model.getId()),
         model.getName(),
         model.getStartDate(),
         model.getBid(),
@@ -42,6 +48,11 @@ public class CampaignMappingService implements IMappingService<Campaign, Campaig
    */
   @Override
   public Campaign mapToModel(CampaignDTO dto) {
-    return new Campaign(dto.name(), dto.startDate(), dto.bid());
+    LOGGER.debug("Mapping DTO to Campaign model");
+    if (dto.id().isPresent()) {
+      return new Campaign(dto.id().get(), dto.name(), dto.startDate(), dto.bid(), null);
+    } else {
+      return new Campaign(dto.name(), dto.startDate(), dto.bid());
+    }
   }
 }
