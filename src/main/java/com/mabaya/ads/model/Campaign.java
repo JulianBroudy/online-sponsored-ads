@@ -2,8 +2,6 @@ package com.mabaya.ads.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 
@@ -24,13 +22,15 @@ public class Campaign {
   private Long id;
 
   private String name;
-  private Timestamp startDate;
+  private Instant startDate;
   private BigDecimal bid;
-  @ManyToMany private Collection<Product> products;
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  private Collection<Product> products;
 
   public Campaign() {}
 
-  public Campaign(String name, Timestamp startDate, BigDecimal bid, Collection<Product> products) {
+  public Campaign(String name, Instant startDate, BigDecimal bid, Collection<Product> products) {
     this.name = name;
     this.startDate = startDate;
     this.bid = bid;
@@ -38,7 +38,7 @@ public class Campaign {
   }
 
   public Campaign(
-      Long id, String name, Timestamp startDate, BigDecimal bid, Collection<Product> products) {
+      Long id, String name, Instant startDate, BigDecimal bid, Collection<Product> products) {
     this.id = id;
     this.name = name;
     this.startDate = startDate;
@@ -46,7 +46,7 @@ public class Campaign {
     this.products = products;
   }
 
-  public Campaign(String name, Timestamp startDate, BigDecimal bid) {
+  public Campaign(String name, Instant startDate, BigDecimal bid) {
     this.name = name;
     this.startDate = startDate;
     this.bid = bid;
@@ -68,11 +68,11 @@ public class Campaign {
     this.name = name;
   }
 
-  public Timestamp getStartDate() {
+  public Instant getStartDate() {
     return startDate;
   }
 
-  public void setStartDate(Timestamp startDate) {
+  public void setStartDate(Instant startDate) {
     this.startDate = startDate;
   }
 
@@ -92,7 +92,4 @@ public class Campaign {
     this.products = products;
   }
 
-  public boolean isActive() {
-    return Duration.between(startDate.toInstant(), Instant.now()).toDays() < 10;
-  }
 }
