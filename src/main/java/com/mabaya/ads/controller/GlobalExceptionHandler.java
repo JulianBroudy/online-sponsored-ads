@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
@@ -32,13 +31,12 @@ public class GlobalExceptionHandler {
    * MethodArgumentTypeMismatchException}.
    *
    * @param ex The exception encountered.
-   * @param request The web request during which the exception occurred.
    * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
    */
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleMethodArgumentTypeMismatch(
-      MethodArgumentTypeMismatchException ex, WebRequest request) {
+      MethodArgumentTypeMismatchException ex) {
     String error = "Invalid value for parameter '" + ex.getName() + "': " + ex.getValue();
     LOGGER.warn(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -48,13 +46,11 @@ public class GlobalExceptionHandler {
    * Handles cases where a value conversion fails, leading to a {@link ConversionFailedException}.
    *
    * @param ex The exception encountered.
-   * @param request The web request during which the exception occurred.
    * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
    */
   @ExceptionHandler(ConversionFailedException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<String> handleConversionFailed(
-      ConversionFailedException ex, WebRequest request) {
+  public ResponseEntity<String> handleConversionFailed(ConversionFailedException ex) {
     String error = "Failed to convert value: " + ex.getValue() + " for " + ex.getTargetType();
     LOGGER.warn(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
