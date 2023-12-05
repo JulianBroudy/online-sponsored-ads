@@ -15,7 +15,7 @@ import java.util.Set;
  * @param <DTO> the type parameter representing the Data Transfer Object
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
-public interface IMappingService<MODEL, DTO> {
+public interface IMapper<MODEL, DTO> {
 
   /**
    * Maps a given model entity to its corresponding DTO.
