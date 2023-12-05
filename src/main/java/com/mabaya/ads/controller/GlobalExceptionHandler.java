@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleMethodArgumentTypeMismatch(
       MethodArgumentTypeMismatchException ex) {
     String error = "Invalid value for parameter '" + ex.getName() + "': " + ex.getValue();
-    LOGGER.warn(error);
+    LOGGER.error(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleConversionFailed(ConversionFailedException ex) {
     String error = "Failed to convert value: " + ex.getValue() + " for " + ex.getTargetType();
-    LOGGER.warn(error);
+    LOGGER.error(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
