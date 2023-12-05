@@ -1,5 +1,6 @@
-package com.mabaya.ads.controller;
+package com.mabaya.ads.configuration;
 
+import com.mabaya.ads.controller.V1RestController;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
