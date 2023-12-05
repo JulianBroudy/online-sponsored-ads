@@ -5,92 +5,203 @@ import com.mabaya.ads.model.Campaign;
 import com.mabaya.ads.model.Category;
 import com.mabaya.ads.model.Product;
 import com.mabaya.ads.repository.CampaignRepository;
-import com.mabaya.ads.repository.ProductRepository;
-import com.mabaya.ads.service.mapping.IMappingService;
-import java.sql.Timestamp;
-import java.util.ArrayList;
+import com.mabaya.ads.service.mapping.IMapper;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Todo ExplainTheClass.
+ * Service class for managing campaigns. This class provides methods to create, retrieve, and manage
+ * campaigns based on {@link CampaignDTO} and {@link Category}.
  *
- * <p>TODO Check @Transactional annotation usages here?
+ * <p>It utilizes {@link CampaignRepository} for database operations and {@link IMapper} for mapping
+ * between DTOs and entities. The {@link ProductService} is used for additional product-related
+ * validations and operations.
  *
+ * <p>Usage of {@link Transactional} ensures that database operations are handled within a
+ * transaction context, providing consistency and rollback capabilities for complex operations.
+ *
+ * @see Campaign
+ * @see CampaignDTO
+ * @see Category
+ * @see ProductService
+ * @see IMapper
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Service
 public class CampaignService {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CampaignService.class);
+
   private final CampaignRepository campaignRepository;
-  private final IMappingService<Campaign, CampaignDTO> campaignMappingService;
-  private final ProductRepository productRepository;
+  private final IMapper<Campaign, CampaignDTO> campaignMapper;
+  private final ProductService productService;
 
   @Autowired
   public CampaignService(
       CampaignRepository campaignRepository,
-      IMappingService<Campaign, CampaignDTO> campaignMappingService,
-      ProductRepository productRepository) {
+      IMapper<Campaign, CampaignDTO> campaignMapper,
+      ProductService productService) {
     this.campaignRepository = campaignRepository;
-    this.campaignMappingService = campaignMappingService;
-    this.productRepository = productRepository;
+    this.campaignMapper = campaignMapper;
+    this.productService = productService;
   }
 
+  /**
+   * Creates and persists a new campaign based on the provided {@link CampaignDTO}. Validates the
+   * campaign data before saving and links products to the campaign.
+   *
+   * @param campaignDTO The DTO containing campaign details.
+   * @return A {@link CampaignDTO} representing the newly created and persisted campaign.
+   * @throws IllegalArgumentException If the campaign data is invalid.
+   */
+  @Transactional
   public CampaignDTO createCampaign(CampaignDTO campaignDTO) {
+    LOGGER.debug("Creating a new campaign: {}", campaignDTO);
     validateCampaignData(campaignDTO);
-    Campaign campaign = campaignMappingService.mapToModel(campaignDTO);
-    campaign.setProducts(productIdsToProducts(campaignDTO.productIds()));
-    campaign = campaignRepository.save(campaign);
-    return campaignMappingService.mapToDTO(campaign);
-  }
-
-  private Collection<Product> productIdsToProducts(Collection<Long> productIds) {
-    final List<Product> list = new ArrayList<>();
-    for (Long id : productIds) {
-      list.add(productRepository.findById(id).orElseThrow());
-    }
-    return list;
+    Set<Product> products = productService.fetchAndValidateProducts(campaignDTO.productIds());
+    Campaign campaign = campaignMapper.mapToModel(campaignDTO);
+    campaign.setProducts(products);
+    LOGGER.info("Saving new campaign: {}", campaign);
+    return campaignMapper.mapToDTO(campaignRepository.save(campaign));
   }
 
   private void validateCampaignData(CampaignDTO campaignDTO) {
-    // TODO Validate the campaignDTO data (check if the product identifiers exist, etc.)     //
-    // Throw relevant exceptions if validation fails
-    // Validate the start date and ensure product identifiers exist
+    LOGGER.debug("Validating campaign data: {}", campaignDTO);
+    if (campaignDTO.startDate().isBefore(Instant.now())) {
+      throw new IllegalArgumentException("Campaign start date cannot be in the past");
+    }
+    LOGGER.debug("Campaign data validated successfully");
   }
 
-  public List<CampaignDTO> getCampaigns() {
+  /**
+   * Retrieves all campaigns and converts them to DTOs.
+   *
+   * @return A list of {@link CampaignDTO} representing all campaigns.
+   */
+  @Transactional(readOnly = true)
+  public List<CampaignDTO> getAllCampaigns() {
+    LOGGER.debug("Retrieving all campaigns");
     Collection<Campaign> campaigns = campaignRepository.findAll();
-    return campaignMappingService.mapToDTO(campaigns).stream().toList();
+    return campaignMapper.mapToDTO(campaigns).stream().toList();
   }
 
-  public Campaign getActiveCampaignWithHighestBid(Category category) {
-    final long currentTimeMillis = System.currentTimeMillis();
-    final Timestamp now = new Timestamp(currentTimeMillis);
-    final Timestamp tenDaysAgo = new Timestamp(currentTimeMillis - TimeUnit.DAYS.toMillis(10));
+  /**
+   * Counts the total number of campaigns available.
+   *
+   * @return The total count of campaigns.
+   */
+  @Transactional(readOnly = true)
+  public long countAllCampaigns() {
+    LOGGER.debug("Counting all campaigns");
+    return campaignRepository.count();
+  }
 
+  /**
+   * Attempts to find an active campaign with the highest bid for a given category at the time of
+   * the request. If no campaign is found for the specified {@link Category}, it retries the search
+   * without considering the category.
+   *
+   * @param category The category to filter campaigns, or null to ignore the category.
+   * @return The campaign with the highest bid.
+   * @throws NoSuchElementException if no active campaign is found after retries.
+   */
+  @Transactional(readOnly = true)
+  public Campaign getActiveCampaignWithHighestBid(Category category) {
+    Instant requestTime = Instant.now();
+    try {
+      return findActiveCampaign(category, requestTime);
+    } catch (NoSuchElementException e) {
+      LOGGER.debug(
+          "No campaign found for category {}. Trying without category constraint.", category);
+      if (category != null) {
+        // Retry without category
+        return findActiveCampaign(null, requestTime);
+      } else {
+        // If the retry was already without category, rethrow the exception
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Finds an active campaign based on the provided category and current time. If no active
+   * campaigns are found, a {@link NoSuchElementException} is thrown.
+   *
+   * @param category The category to filter campaigns, or null to fetch campaigns without category
+   *     constraint.
+   * @return The active campaign with the highest bid for the specified category.
+   * @throws NoSuchElementException if no active campaigns are found for the given category.
+   */
+  @Transactional(readOnly = true)
+  public Campaign findActiveCampaign(Category category) throws NoSuchElementException {
+    return findActiveCampaign(category, Instant.now());
+  }
+
+  /**
+   * Finds an active campaign based on the provided category and specified request time. If no
+   * active campaign is found, a {@link NoSuchElementException} is thrown.
+   *
+   * @param category The category to filter campaigns, or null to fetch campaigns without category
+   *     constraint.
+   * @param requestTime The timestamp when the request was made.
+   * @return The active campaign with the highest bid for the specified category.
+   * @throws NoSuchElementException if no active campaigns are found for the given category and
+   *     time.
+   */
+  @Transactional(readOnly = true)
+  public Campaign findActiveCampaign(Category category, Instant requestTime)
+      throws NoSuchElementException {
+    LOGGER.debug("Finding active campaign for category: {} at time: {}", category, requestTime);
+    final Instant tenDaysAgo = requestTime.minus(Duration.ofDays(10));
     final PageRequest pageRequest = PageRequest.of(0, 1);
 
-    List<Campaign> activeCampaigns =
+    final List<Campaign> activeCampaigns =
         campaignRepository
-            .findAllActiveCampaignWithHighestBidByCategory(now, tenDaysAgo, category, pageRequest)
+            .findAllActiveCampaignWithHighestBidByCategory(
+                requestTime, tenDaysAgo, category, pageRequest)
             .getContent();
-    if (!activeCampaigns.isEmpty()) {
-      return activeCampaigns.get(0);
-    } else {
-      // Fallback
-      activeCampaigns =
-          campaignRepository
-              .findAllActiveCampaignWithHighestBidByCategory(now, tenDaysAgo, null, pageRequest)
-              .getContent();
-      if (!activeCampaigns.isEmpty()) {
-        return activeCampaigns.get(0);
-      }
-      // TODO make the exception specific
-      throw new RuntimeException("No active campaigns found");
+
+    if (activeCampaigns.isEmpty()) {
+      LOGGER.debug("No active campaigns found for category: {}", category);
+      throw new NoSuchElementException("No active campaigns found");
     }
+    final Campaign campaign = activeCampaigns.get(0);
+    LOGGER.debug("Active campaign found: {}", campaign);
+    return campaign;
+  }
+
+  /**
+   * Persists a campaign based on the provided {@link CampaignDTO}.
+   *
+   * @param campaignDTO The DTO containing campaign details.
+   * @return The persisted {@link Campaign}.
+   */
+  @Transactional
+  public Campaign persistCampaign(CampaignDTO campaignDTO) {
+    LOGGER.debug("Persisting campaign: {}", campaignDTO);
+    Campaign persistedCampaign = campaignRepository.save(campaignMapper.mapToModel(campaignDTO));
+    LOGGER.info("Campaign persisted successfully: {}", persistedCampaign);
+    return persistedCampaign;
+  }
+
+  /**
+   * Persists a list of campaigns.
+   *
+   * @param campaigns The list of {@link Campaign} entities to be persisted.
+   */
+  @Transactional
+  public void persistCampaigns(List<Campaign> campaigns) {
+    LOGGER.debug("Persisting multiple campaigns: {}", campaigns);
+    campaignRepository.saveAll(campaigns);
   }
 }
