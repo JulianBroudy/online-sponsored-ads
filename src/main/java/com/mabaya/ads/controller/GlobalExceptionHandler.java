@@ -13,32 +13,60 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
- * Todo ExplainTheClass.
+ * Global exception handler for the application. This class uses {@link ControllerAdvice} to handle
+ * exceptions across the whole application, providing a central point to manage error responses.
+ *
+ * <p>It offers handling for common exceptions such as {@link MethodArgumentTypeMismatchException},
+ * {@link ConversionFailedException}, {@link IllegalArgumentException}, and {@link
+ * NoSuchElementException}, ensuring a consistent response format for various error scenarios.
  *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
+ * @see ResponseEntity
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+  /**
+   * Handles cases where a method argument's type does not match, resulting in a {@link
+   * MethodArgumentTypeMismatchException}.
+   *
+   * @param ex The exception encountered.
+   * @param request The web request during which the exception occurred.
+   * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
+   */
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleMethodArgumentTypeMismatch(
       MethodArgumentTypeMismatchException ex, WebRequest request) {
     String error = "Invalid value for parameter '" + ex.getName() + "': " + ex.getValue();
-    LOGGER.info(error);
+    LOGGER.warn(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
+  /**
+   * Handles cases where a value conversion fails, leading to a {@link ConversionFailedException}.
+   *
+   * @param ex The exception encountered.
+   * @param request The web request during which the exception occurred.
+   * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
+   */
   @ExceptionHandler(ConversionFailedException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleConversionFailed(
       ConversionFailedException ex, WebRequest request) {
     String error = "Failed to convert value: " + ex.getValue() + " for " + ex.getTargetType();
-    LOGGER.info(error);
+    LOGGER.warn(error);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
+  /**
+   * Handles {@link IllegalArgumentException} to provide a clear response when an illegal argument
+   * is passed.
+   *
+   * @param ex The IllegalArgumentException encountered.
+   * @return A {@link ResponseEntity} with the exception's message and a BAD_REQUEST status.
+   */
   @ExceptionHandler(IllegalArgumentException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -46,6 +74,13 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
 
+  /**
+   * Handles {@link NoSuchElementException}, providing a NOT_FOUND response when an element is not
+   * found.
+   *
+   * @param ex The NoSuchElementException encountered.
+   * @return A {@link ResponseEntity} with the exception's message and a NOT_FOUND status.
+   */
   @ExceptionHandler(NoSuchElementException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException ex) {
