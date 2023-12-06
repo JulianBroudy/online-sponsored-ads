@@ -117,13 +117,13 @@ public class CampaignService {
   public Campaign getActiveCampaignWithHighestBid(Category category) {
     Instant requestTime = Instant.now();
     try {
-      return findActiveCampaign(category, requestTime);
+      return findActiveCampaignWithHighestBid(category, requestTime);
     } catch (NoSuchElementException e) {
       LOGGER.debug(
           "No campaign found for category {}. Trying without category constraint.", category);
       if (category != null) {
         // Retry without category
-        return findActiveCampaign(null, requestTime);
+        return findActiveCampaignWithHighestBid(null, requestTime);
       } else {
         // If the retry was already without category, rethrow the exception
         throw e;
@@ -141,8 +141,9 @@ public class CampaignService {
    * @throws NoSuchElementException if no active campaigns are found for the given category.
    */
   @Transactional(readOnly = true)
-  public Campaign findActiveCampaign(Category category) throws NoSuchElementException {
-    return findActiveCampaign(category, Instant.now());
+  public Campaign findActiveCampaignWithHighestBid(Category category)
+      throws NoSuchElementException {
+    return findActiveCampaignWithHighestBid(category, Instant.now());
   }
 
   /**
@@ -157,7 +158,7 @@ public class CampaignService {
    *     time.
    */
   @Transactional(readOnly = true)
-  public Campaign findActiveCampaign(Category category, Instant requestTime)
+  public Campaign findActiveCampaignWithHighestBid(Category category, Instant requestTime)
       throws NoSuchElementException {
     LOGGER.debug("Finding active campaign for category: {} at time: {}", category, requestTime);
     final Instant tenDaysAgo = requestTime.minus(Duration.ofDays(10));
@@ -196,10 +197,11 @@ public class CampaignService {
    * Persists a list of campaigns.
    *
    * @param campaigns The list of {@link Campaign} entities to be persisted.
+   * @return A list of persisted {@link Campaign} entities.
    */
   @Transactional
-  public void persistCampaigns(List<Campaign> campaigns) {
+  public List<Campaign> persistCampaigns(List<Campaign> campaigns) {
     LOGGER.debug("Persisting multiple campaigns: {}", campaigns);
-    campaignRepository.saveAll(campaigns);
+    return campaignRepository.saveAll(campaigns);
   }
 }
