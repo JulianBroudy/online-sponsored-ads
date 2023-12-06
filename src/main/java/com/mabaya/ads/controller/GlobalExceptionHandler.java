@@ -1,11 +1,16 @@
 package com.mabaya.ads.controller;
 
+import com.mabaya.ads.dto.ExceptionResponse;
+import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -27,33 +32,24 @@ public class GlobalExceptionHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   /**
-   * Handles cases where a method argument's type does not match, resulting in a {@link
-   * MethodArgumentTypeMismatchException}.
+   * Handles validation failures for request payload.
    *
-   * @param ex The exception encountered.
-   * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
+   * @param ex The MethodArgumentNotValidException encountered.
+   * @return A {@link ResponseEntity} with the validation error details and a BAD_REQUEST status.
    */
-  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<String> handleMethodArgumentTypeMismatch(
-      MethodArgumentTypeMismatchException ex) {
-    String error = "Invalid value for parameter '" + ex.getName() + "': " + ex.getValue();
-    LOGGER.error(error);
-    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-  }
+  public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(
+      MethodArgumentNotValidException ex) {
+    BindingResult result = ex.getBindingResult();
 
-  /**
-   * Handles cases where a value conversion fails, leading to a {@link ConversionFailedException}.
-   *
-   * @param ex The exception encountered.
-   * @return A {@link ResponseEntity} with an error message and a BAD_REQUEST status.
-   */
-  @ExceptionHandler(ConversionFailedException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<String> handleConversionFailed(ConversionFailedException ex) {
-    String error = "Failed to convert value: " + ex.getValue() + " for " + ex.getTargetType();
-    LOGGER.error(error);
-    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    String errorMessage =
+        result.getFieldErrors().stream()
+            .map(fe -> String.format("[%s: %s]", fe.getField(), fe.getDefaultMessage()))
+            .collect(Collectors.joining(", "));
+
+    LOGGER.error("Caught a {}: {}", ex.getClass().getSimpleName(), errorMessage);
+    return getExceptionResponseResponseEntity(HttpStatus.BAD_REQUEST, errorMessage);
   }
 
   /**
@@ -63,11 +59,18 @@ public class GlobalExceptionHandler {
    * @param ex The IllegalArgumentException encountered.
    * @return A {@link ResponseEntity} with the exception's message and a BAD_REQUEST status.
    */
-  @ExceptionHandler(IllegalArgumentException.class)
+  @ExceptionHandler({
+    MethodArgumentTypeMismatchException.class,
+    ConversionFailedException.class,
+    IllegalArgumentException.class
+  })
+  // TODO javadoc
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-    LOGGER.error("Illegal argument exception: {}", ex.getMessage());
-    return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+  public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(
+      IllegalArgumentException ex) {
+    final String errorMessage = ex.getMessage();
+    LOGGER.error("Caught a {}: {}", ex.getClass().getSimpleName(), errorMessage);
+    return getExceptionResponseResponseEntity(HttpStatus.BAD_REQUEST, errorMessage);
   }
 
   /**
@@ -79,8 +82,16 @@ public class GlobalExceptionHandler {
    */
   @ExceptionHandler(NoSuchElementException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException ex) {
-    LOGGER.error("No such element: {}", ex.getMessage());
-    return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+  public ResponseEntity<ExceptionResponse> handleNoSuchElementException(NoSuchElementException ex) {
+    final String errorMessage = ex.getMessage();
+    LOGGER.error("No such element: {}", errorMessage);
+    return getExceptionResponseResponseEntity(HttpStatus.NOT_FOUND, errorMessage);
+  }
+
+  private ResponseEntity<ExceptionResponse> getExceptionResponseResponseEntity(
+      HttpStatus httpStatus, String errorMessage) {
+    return new ResponseEntity<>(
+        new ExceptionResponse(httpStatus.getReasonPhrase(), errorMessage, Instant.now()),
+        httpStatus);
   }
 }
