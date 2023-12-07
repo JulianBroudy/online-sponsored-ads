@@ -166,7 +166,7 @@ public class CampaignService {
 
     final List<Campaign> activeCampaigns =
         campaignRepository
-            .findAllActiveCampaignWithHighestBidByCategory(
+            .findAllActiveCampaignsByCategoryOrderedByBid(
                 requestTime, tenDaysAgo, category, pageRequest)
             .getContent();
 
@@ -203,5 +203,14 @@ public class CampaignService {
   public List<Campaign> persistCampaigns(List<Campaign> campaigns) {
     LOGGER.debug("Persisting multiple campaigns: {}", campaigns);
     return campaignRepository.saveAll(campaigns);
+  }
+
+  public boolean hasProductsWithCategory(Campaign campaign, Category category) {
+    for (Product product : campaign.getProducts()) {
+      if (product.getCategory().equals(category)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

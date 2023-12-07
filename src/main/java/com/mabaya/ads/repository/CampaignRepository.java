@@ -27,7 +27,7 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
    */
   @Query(
       "SELECT c FROM Campaign c JOIN c.products p WHERE c.startDate <= :now AND c.startDate > :nowMinus10Days AND (:category IS NULL OR p.category = :category) ORDER BY c.bid DESC")
-  Page<Campaign> findAllActiveCampaignWithHighestBidByCategory(
+  Page<Campaign> findAllActiveCampaignsByCategoryOrderedByBid(
       @Param("now") Instant now,
       @Param("nowMinus10Days") Instant nowMinus10Days,
       @Param("category") Category category,

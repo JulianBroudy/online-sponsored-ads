@@ -28,6 +28,12 @@ public class MabayaWebMvcConfigurer implements WebMvcConfigurer {
   @Override
   public void addFormatters(FormatterRegistry registry) {
     registry.addConverter(
-        (Converter<String, Category>) source -> Category.valueOf(source.toUpperCase()));
+        new Converter<String, Category>() {
+
+          @Override
+          public Category convert(String source) {
+            return Category.valueOf(source.toUpperCase());
+          }
+        });
   }
 }

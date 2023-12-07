@@ -1,6 +1,9 @@
 package com.mabaya.ads.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
@@ -21,9 +24,9 @@ public class Campaign {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "campaign_sequence")
   private Long id;
 
-  private String name;
-  private Instant startDate;
-  private BigDecimal bid;
+  @NotBlank private String name;
+  @NotNull private Instant startDate;
+  @Positive private BigDecimal bid;
 
   @ManyToMany(fetch = FetchType.LAZY)
   private Collection<Product> products;
@@ -91,5 +94,4 @@ public class Campaign {
   public void setProducts(Collection<Product> products) {
     this.products = products;
   }
-
 }

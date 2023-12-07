@@ -1,6 +1,9 @@
 package com.mabaya.ads.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 /**
@@ -20,12 +23,14 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_sequence")
   private Long id;
 
-  private String title;
-  private BigDecimal price;
+  @NotBlank private String title;
+  @Positive private BigDecimal price;
 
+  @NotNull
   @Enumerated(EnumType.STRING)
   private Category category;
 
+  @NotBlank
   @Column(unique = true)
   private String serialNumber;
 

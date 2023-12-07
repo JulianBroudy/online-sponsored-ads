@@ -54,8 +54,11 @@ public class AdService {
   public ProductDTO getPromotedProductWithHighestBid(Category category) {
     LOGGER.debug("Getting promoted product with highest bid for category {}", category);
     final Campaign activeCampaign = campaignService.getActiveCampaignWithHighestBid(category);
+    final boolean foundActiveCampaignByCategory =
+        campaignService.hasProductsWithCategory(activeCampaign, category);
     final Product productWithHighestPrice =
-        productService.getProductWithHighestPrice(activeCampaign.getProducts(), category);
+        productService.getProductWithHighestPrice(
+            activeCampaign.getProducts(), foundActiveCampaignByCategory ? category : null);
     return productService.getDTO(productWithHighestPrice);
   }
 }
