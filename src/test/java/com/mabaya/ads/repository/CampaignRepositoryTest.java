@@ -20,12 +20,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 // For debugging purposes remove comment
-//@Transactional(propagation = Propagation.NOT_SUPPORTED)
-@DataJpaTest(showSql = true)
+// @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CampaignRepositoryTest extends AbstractIntegrationTest {
 
@@ -164,6 +162,28 @@ public class CampaignRepositoryTest extends AbstractIntegrationTest {
     assertEquals(2, result.getContent().size());
     assertEquals("Higher Bid Campaign", result.getContent().get(0).getName());
     assertEquals("Lower Bid Campaign", result.getContent().get(1).getName());
+  }
+
+  @Test
+  public void shouldRespectPagination() {
+    List<Product> products = createProducts(1, Category.SPORTS);
+    productRepository.saveAll(products);
+
+    List<Campaign> campaigns =
+        IntStream.range(0, 5)
+            .mapToObj(i -> createCampaignWithBid50(ACTIVE + i, now, products))
+            .collect(Collectors.toList());
+    campaignRepository.saveAll(campaigns);
+
+    // Execute query with limited page size
+    Page<Campaign> result =
+        campaignRepository.findAllActiveCampaignsByCategoryOrderedByBid(
+            now, tenDaysAgo, Category.SPORTS, PageRequest.of(0, 2));
+
+    // Assertions
+    assertEquals(2, result.getSize());
+    assertTrue(result.hasContent());
+    assertTrue(result.getTotalElements() >= 2);
   }
 
   @Test
