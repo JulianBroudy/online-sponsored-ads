@@ -26,11 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
-/**
- * Todo ExplainTheClass.
- *
- * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class AdControllerIntegrationTest extends AbstractIntegrationTest {

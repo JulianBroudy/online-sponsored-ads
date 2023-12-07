@@ -64,7 +64,6 @@ public class GlobalExceptionHandler {
     ConversionFailedException.class,
     IllegalArgumentException.class
   })
-  // TODO javadoc
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(
       IllegalArgumentException ex) {

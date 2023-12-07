@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
+// Given time would consider making the entities immutable/using Lombok and introducing abstract
+// class and/or interface for entities and add common fields like dateCreated, createdBy, ...
 /**
- * Todo Should we create an interface for the getters? Todo Should we remove the setters?
- *
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Entity

@@ -16,8 +16,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CampaignRepository extends JpaRepository<Campaign, Long> {
 
-  // Preferred complexity rather than separate call to database.
-  // Ideally would have a more experienced architect to brainstorm.
+  // Preferred complexity rather than separate calls to database.
+  // Ideally would have a more experienced architect to brainstorm with.
   /**
    * Finds all active campaigns with the highest bid for a given category. The query joins the
    * Campaign and Product entities, filtering by the campaign's start date to ensure it's active
