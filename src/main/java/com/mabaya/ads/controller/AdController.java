@@ -3,6 +3,10 @@ package com.mabaya.ads.controller;
 import com.mabaya.ads.dto.ProductDTO;
 import com.mabaya.ads.model.Category;
 import com.mabaya.ads.service.AdService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
  * @see ProductDTO
  * @see Category
  */
+@Tag(name = "Ad Controller", description = "The Ad API provides operations to serve ads.")
 @V1RestController
 @RequestMapping(path = "/ad")
 public class AdController {
@@ -42,8 +47,13 @@ public class AdController {
    * @param category The category of products for which to serve an ad.
    * @return ResponseEntity containing the promoted ProductDTO or an appropriate error response.
    */
+  @Operation(
+      summary = "Serve an ad",
+      description = "Serve a promoted product ad based on the specified category")
+  @ApiResponse(responseCode = "200", description = "Successfully served an ad")
   @GetMapping("/{category}")
-  public ResponseEntity<ProductDTO> serveAd(@PathVariable Category category) {
+  public ResponseEntity<ProductDTO> serveAd(
+      @Parameter(description = "Category of the product") @PathVariable Category category) {
     try {
       final ProductDTO promotedProduct = adService.getPromotedProductWithHighestBid(category);
       LOGGER.debug("Serving ad for category: {}", category);

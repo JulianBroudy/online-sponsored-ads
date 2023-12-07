@@ -2,6 +2,9 @@ package com.mabaya.ads.controller;
 
 import com.mabaya.ads.dto.CampaignDTO;
 import com.mabaya.ads.service.CampaignService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.slf4j.Logger;
@@ -22,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
  * @see CampaignService
  * @see CampaignDTO
  */
+@Tag(
+    name = "Campaign Controller",
+    description = "The Campaign API provides operations to manage campaigns.")
 @V1RestController
 @RequestMapping(path = "/campaign")
 public class CampaignController {
@@ -40,6 +46,10 @@ public class CampaignController {
    *
    * @return ResponseEntity containing a list of CampaignDTOs.
    */
+  @Operation(
+      summary = "Get all campaigns",
+      description = "Retrieve a list of all existing campaigns")
+  @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of campaigns")
   @GetMapping
   public ResponseEntity<List<CampaignDTO>> getCampaigns() {
     LOGGER.info("Request received to fetch all campaigns");
@@ -59,6 +69,10 @@ public class CampaignController {
    * @param campaignDTO The DTO containing the details for the new campaign.
    * @return ResponseEntity containing the created CampaignDTO.
    */
+  @Operation(
+      summary = "Create a campaign",
+      description = "Create a new campaign with provided details")
+  @ApiResponse(responseCode = "201", description = "Successfully created the campaign")
   @PostMapping
   public ResponseEntity<CampaignDTO> createCampaign(@Valid @RequestBody CampaignDTO campaignDTO) {
     LOGGER.info("Request received to create a new campaign: {}", campaignDTO);
