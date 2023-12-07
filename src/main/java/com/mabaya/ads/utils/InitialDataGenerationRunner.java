@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Component;
  * @author <a href="https://github.com/JulianBroudy">Julian Broudy</a>
  */
 @Component
+// Just for ease, should find another way given more time.
+@Profile("!test")
 public class InitialDataGenerationRunner implements ApplicationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialDataGenerationRunner.class);
